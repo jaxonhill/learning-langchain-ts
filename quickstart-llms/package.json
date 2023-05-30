@@ -1,0 +1,20 @@
+{
+  "name": "quickstart-llms",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node --esm ./index.ts"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ts-node": "^10.9.1"
+  },
+  "dependencies": {
+    "@types/node": "^20.2.5",
+    "dotenv": "^16.0.3",
+    "langchain": "^0.0.84"
+  }
+}
