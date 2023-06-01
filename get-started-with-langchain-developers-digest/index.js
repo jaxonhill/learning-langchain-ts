@@ -1,25 +1,45 @@
-// PSUEDO CODE
+import * as fs from "fs";
+import { HNSWLib } from "langchain/vectorstores/hnswlib";
+import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { PlaywrightWebBaseLoader } from "langchain/document_loaders/web/playwright";
+import "dotenv/config";
 
-// Check for vector store (.index file)
+// Grab OPENAI api key from .env
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const FILE_PATH = "how_to_get_rich.index";
+const HOW_TO_GET_RICH_WEBSITE_LINK = "https://nav.al/rich";
 
-    // If there, just load the embeddings
+// Define vectorStore variable, later assigned through files or creating it from web
+let vectorStore;
 
-    // Else
-        // Go to the website
+// Check for vector storage saved locally (.index file)
+if (fs.existsSync(FILE_PATH)) {
+    // If there, just load the embeddings and other info into vectorStore
+    vectorStore = await HNSWLib.load(FILE_PATH);
+} else {
+    // Load website body content
+    const loader = new PlaywrightWebBaseLoader(HOW_TO_GET_RICH_WEBSITE_LINK);
 
-        // Download HTML body
+    // Create document from the body and get the content from the created document array
+    const docArr = await loader.load();
+    const pageContent = docArr[0].pageContent;
 
-        // Convert it to a markdown or text file
+    console.log(pageContent);
+    
+    // Convert it to a markdown or text file
 
-        // Load the text file
+    // Load the text file
 
-        // Create chunks from the text
+    // Create chunks from the text
 
-        // Create documents for each of those chunks
+    // Create documents for each of those chunks
 
-        // Create a vector store for that
+    // Create a vector store for that
 
-        // Save the vector store to a file
+    // Save the vector store to a file
+
+    console.log("Does not exist");
+}
 
 // Create new ChatOpenAI model object with API key
 
