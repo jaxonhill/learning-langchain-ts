@@ -97,7 +97,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const SERPAPI_API_KEY = process.env.SERPAPI_API_KEY;
 
 // Init the chat model
-const chat: ChatOpenAI = new ChatOpenAI({ openAIApiKey: OPENAI_API_KEY });
+const chat = new ChatOpenAI({ openAIApiKey: OPENAI_API_KEY });
 
 // Define a list of tools that an agent can use
 const tools = [
