@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { HNSWLib } from "langchain/vectorstores/hnswlib";
+import { FaissStore } from "langchain/vectorstores/faiss";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
 import { ChatOpenAI } from "langchain/chat_models/openai";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
@@ -9,7 +9,7 @@ import "dotenv/config";
 
 // Grab OPENAI api key from .env
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const FILE_PATH = "how_to_get_rich.index";
+const FILE_PATH = "./how_to_get_rich.index";
 const HOW_TO_GET_RICH_WEBSITE_LINK = "https://nav.al/rich";
 
 function calculateRoughCostFromDocuments(documents) {
@@ -35,7 +35,8 @@ let vectorStore;
 // Check for vector storage saved locally (.index file)
 if (fs.existsSync(FILE_PATH)) {
     // If there, just load the embeddings and other info into vectorStore
-    vectorStore = await HNSWLib.load(FILE_PATH);
+    vectorStore = await FaissStore.load(FILE_PATH);
+    console.log(`Vector Store already exists locally. Loading from "${FILE_PATH}"`)
 } else {
     // Load website body content
     const loader = new PlaywrightWebBaseLoader(HOW_TO_GET_RICH_WEBSITE_LINK);
@@ -58,22 +59,21 @@ if (fs.existsSync(FILE_PATH)) {
     let documents = await textSplitter.createDocuments([markdownContent]);
     documents = documents.slice(9); // Only want documents from 9-end, beginning is random code
 
-    console.log("Created documents.")
-    console.log(`Rough Cost Estimate: $${calculateRoughCostFromDocuments(documents)}`);
+    console.log("\nCreated documents.")
+    console.log(`Rough Cost Estimate: $${calculateRoughCostFromDocuments(documents)}\n`);
 
-    // Ask the user if they are comfortable with the cost and if they want to proceed
-    
+    // Create embeddings object with API key
+    const embeddingsObj = new OpenAIEmbeddings({ openAIApiKey: OPENAI_API_KEY });
 
-    // // Create embeddings object with API key
-    // const embeddingsObj = new OpenAIEmbeddings({ openAIApiKey: OPENAI_API_KEY });
+    // Create a vector store for that
+    vectorStore = await FaissStore.fromDocuments(documents, embeddingsObj);
 
-    // // Create a vector store for that
-    // vectorStore = await HNSWLib.fromDocuments(documents, embeddingsObj);
+    console.log("Created embeddings.");
 
-    // // Save the vector store to a file
-    // await vectorStore.save(FILE_PATH);
+    // Save the vector store to a file
+    await vectorStore.save(FILE_PATH);
 
-    // console.log("Successfully saved embeddings")
+    console.log("Successfully saved embeddings!\n")
 }
 
 // Create new ChatOpenAI model object with API key
