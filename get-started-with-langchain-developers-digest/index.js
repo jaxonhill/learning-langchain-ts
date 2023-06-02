@@ -1,7 +1,9 @@
 import * as fs from "fs";
 import { HNSWLib } from "langchain/vectorstores/hnswlib";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { PlaywrightWebBaseLoader } from "langchain/document_loaders/web/playwright";
+import TurndownService from "turndown";
 import "dotenv/config";
 
 // Grab OPENAI api key from .env
@@ -24,21 +26,23 @@ if (fs.existsSync(FILE_PATH)) {
     const docArr = await loader.load();
     const pageContent = docArr[0].pageContent;
 
-    console.log(pageContent);
-    
-    // Convert it to a markdown or text file
+    // Turn HTML into Markdown
+    const turndownService = new TurndownService();
+    const markdownContent = turndownService.turndown(pageContent);
 
-    // Load the text file
+    // Create textSplitter object from the Markdown
+    const textSplitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 2000,
+        chunkOverlap: 200,
+    });
 
-    // Create chunks from the text
-
-    // Create documents for each of those chunks
+    // Create documents (chunks of text with more info attached)
+    const documents = await textSplitter.createDocuments([markdownContent]);
 
     // Create a vector store for that
 
     // Save the vector store to a file
 
-    console.log("Does not exist");
 }
 
 // Create new ChatOpenAI model object with API key
