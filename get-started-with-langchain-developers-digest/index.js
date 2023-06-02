@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import { HNSWLib } from "langchain/vectorstores/hnswlib";
 import { OpenAIEmbeddings } from "langchain/embeddings/openai";
+import { ChatOpenAI } from "langchain/chat_models/openai";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { PlaywrightWebBaseLoader } from "langchain/document_loaders/web/playwright";
 import TurndownService from "turndown";
@@ -10,6 +11,23 @@ import "dotenv/config";
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const FILE_PATH = "how_to_get_rich.index";
 const HOW_TO_GET_RICH_WEBSITE_LINK = "https://nav.al/rich";
+
+function calculateRoughCostFromDocuments(documents) {
+    // Check cost
+    let totalWords = 0;
+
+    // Split words by spaces and add length of this array to total amt of words
+    documents.forEach((doc) => {
+        totalWords += doc.pageContent.split(" ").length;
+    })
+
+    // Make a rough calculation on the premise of (1000 tokens ~= 750 words)
+    let totalTokens = Number(((totalWords * 1000) / 750).toFixed(2))
+
+    // ada v2 embeddings = $0.0004 / 1000 tokens
+    let totalCost = Number(((totalTokens / 1000) * 0.0004).toFixed(4));
+    return totalCost;
+}
 
 // Define vectorStore variable, later assigned through files or creating it from web
 let vectorStore;
@@ -37,12 +55,25 @@ if (fs.existsSync(FILE_PATH)) {
     });
 
     // Create documents (chunks of text with more info attached)
-    const documents = await textSplitter.createDocuments([markdownContent]);
+    let documents = await textSplitter.createDocuments([markdownContent]);
+    documents = documents.slice(9); // Only want documents from 9-end, beginning is random code
 
-    // Create a vector store for that
+    console.log("Created documents.")
+    console.log(`Rough Cost Estimate: $${calculateRoughCostFromDocuments(documents)}`);
 
-    // Save the vector store to a file
+    // Ask the user if they are comfortable with the cost and if they want to proceed
+    
 
+    // // Create embeddings object with API key
+    // const embeddingsObj = new OpenAIEmbeddings({ openAIApiKey: OPENAI_API_KEY });
+
+    // // Create a vector store for that
+    // vectorStore = await HNSWLib.fromDocuments(documents, embeddingsObj);
+
+    // // Save the vector store to a file
+    // await vectorStore.save(FILE_PATH);
+
+    // console.log("Successfully saved embeddings")
 }
 
 // Create new ChatOpenAI model object with API key
